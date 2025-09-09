@@ -20,6 +20,7 @@ import openpi.models.tokenizer as _tokenizer
 import openpi.policies.aloha_policy as aloha_policy
 import openpi.policies.droid_policy as droid_policy
 import openpi.policies.libero_policy as libero_policy
+import openpi.policies.so101_policy as so101_policy
 import openpi.shared.download as _download
 import openpi.shared.normalize as _normalize
 import openpi.training.droid_rlds_dataset as droid_rlds_dataset
@@ -351,6 +352,51 @@ class LeRobotLiberoDataConfig(DataConfigFactory):
             repack_transforms=repack_transform,
             data_transforms=data_transforms,
             model_transforms=model_transforms,
+        )
+
+
+@dataclasses.dataclass(frozen=True)
+class LeRobotSO101DataConfig(DataConfigFactory):
+    action_sequence_keys: Sequence[str] = ("action",)
+
+    @override
+    def create(self, assets_dirs: pathlib.Path, model_config: _model.BaseModelConfig) -> DataConfig:
+        # policy-dataset_keys(used for data:dict in so101_policy) -> inference-keys (lerobot-dataset keys) need for policy server
+        repack_transform = _transforms.Group(
+            inputs=[
+                _transforms.RepackTransform(
+                    {
+                        "images/front": "observation.images.front",
+                        "images/wrist": "observation.images.wrist",
+                        "state": "observation.state",
+                        "actions": "action",
+                        "prompt": "prompt",
+                    }
+                )
+            ]
+        )
+
+        data_transforms = _transforms.Group(
+            inputs=[so101_policy.SO101Inputs(action_dim=model_config.action_dim, model_type=model_config.model_type)],
+            outputs=[so101_policy.SO101Outputs()],
+        )
+
+        # convert absolute actions to delta actions, except for the gripper action
+        # the delta action transform
+        delta_action_mask = _transforms.make_bool_mask(5, -1)
+        data_transforms = data_transforms.push(
+            inputs=[_transforms.DeltaActions(delta_action_mask)],
+            outputs=[_transforms.AbsoluteActions(delta_action_mask)],
+        )
+
+        model_transforms = ModelTransformFactory()(model_config)
+
+        return dataclasses.replace(
+            self.create_base_config(assets_dirs, model_config),
+            repack_transforms=repack_transform,
+            data_transforms=data_transforms,
+            model_transforms=model_transforms,
+            action_sequence_keys=self.action_sequence_keys,
         )
 
 
@@ -740,6 +786,48 @@ _CONFIGS = [
             extra_delta_transform=False,
         ),
         batch_size=256,
+        lr_schedule=_optimizer.CosineDecaySchedule(
+            warmup_steps=10_000,
+            peak_lr=5e-5,
+            decay_steps=1_000_000,
+            decay_lr=5e-5,
+        ),
+        optimizer=_optimizer.AdamW(clip_gradient_norm=1.0),
+        ema_decay=0.999,
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
+        pytorch_weight_path="/path/to/your/pytorch_weight_path",
+        num_train_steps=30_000,
+    ),
+    #
+    # Fine-tuning LeRobot-SO101 configs.
+    #
+    TrainConfig(
+        name="pi0_so101_pick_orange",
+        model=pi0_config.Pi0Config(),
+        data=LeRobotSO101DataConfig(
+            repo_id="EverNorif/leisaac-pick-orange",
+            base_config=DataConfig(prompt_from_task=True),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
+        num_train_steps=30_000,
+    ),
+    TrainConfig(
+        name="pi0_fast_so101_pick_orange",
+        model=pi0_fast.Pi0FASTConfig(action_dim=6, action_horizon=10, max_token_len=180),
+        data=LeRobotSO101DataConfig(
+            repo_id="EverNorif/leisaac-pick-orange",
+            base_config=DataConfig(prompt_from_task=True),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_fast_base/params"),
+        num_train_steps=30_000,
+    ),
+    TrainConfig(
+        name="pi05_so101_pick_orange",
+        model=pi0_config.Pi0Config(pi05=True, action_horizon=10, discrete_state_input=False),
+        data=LeRobotSO101DataConfig(
+            repo_id="EverNorif/leisaac-pick-orange",
+            base_config=DataConfig(prompt_from_task=True),
+        ),
         lr_schedule=_optimizer.CosineDecaySchedule(
             warmup_steps=10_000,
             peak_lr=5e-5,

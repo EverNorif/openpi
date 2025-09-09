@@ -1,0 +1,116 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "compute_norm_stats: pi0_so101_pick_orange",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "scripts/compute_norm_stats.py",
+            "args": [
+                "--config-name", "pi0_so101_pick_orange"
+            ],
+            "env": {
+                "https_proxy": "http://127.0.0.1:7897",
+                "http_proxy": "http://127.0.0.1:7897",
+                "all_proxy": "socks5://127.0.0.1:7897"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "finetune: pi0_so101_pick_orange",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "scripts/train.py",
+            "args": [
+                "pi0_so101_pick_orange",
+                "--exp-name", "pi0_so101_pick_orange",
+                // "--overwrite",
+                // "--resume"
+            ],
+            "env": {
+                "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.9",
+                "https_proxy": "http://127.0.0.1:7897",
+                "http_proxy": "http://127.0.0.1:7897",
+                "all_proxy": "socks5://127.0.0.1:7897"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "compute_norm_stats: pi0_fast_so101_pick_orange",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "scripts/compute_norm_stats.py",
+            "args": [
+                "--config-name", "pi0_fast_so101_pick_orange"
+            ],
+            "env": {
+                "https_proxy": "http://127.0.0.1:7897",
+                "http_proxy": "http://127.0.0.1:7897",
+                "all_proxy": "socks5://127.0.0.1:7897"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "finetune: pi0_fast_so101_pick_orange",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "scripts/train.py",
+            "args": [
+                "pi0_fast_so101_pick_orange",
+                "--exp-name", "pi0_fast_so101_pick_orange",
+                // "--overwrite",
+                // "--resume"
+            ],
+            "env": {
+                "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.9",
+                "https_proxy": "http://127.0.0.1:7897",
+                "http_proxy": "http://127.0.0.1:7897",
+                "all_proxy": "socks5://127.0.0.1:7897"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "compute_norm_stats: pi05_so101_pick_orange",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "scripts/compute_norm_stats.py",
+            "args": [
+                "--config-name", "pi05_so101_pick_orange"
+            ],
+            "env": {
+                "https_proxy": "http://127.0.0.1:7897",
+                "http_proxy": "http://127.0.0.1:7897",
+                "all_proxy": "socks5://127.0.0.1:7897"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "finetune: pi05_so101_pick_orange",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "scripts/train.py",
+            "args": [
+                "pi05_so101_pick_orange",
+                "--exp-name", "pi05_so101_pick_orange",
+                // "--overwrite",
+                // "--resume"
+            ],
+            "env": {
+                "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.9",
+                "https_proxy": "http://127.0.0.1:7897",
+                "http_proxy": "http://127.0.0.1:7897",
+                "all_proxy": "socks5://127.0.0.1:7897"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+    ]
+}
