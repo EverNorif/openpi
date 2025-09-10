@@ -21,6 +21,7 @@ import openpi.policies.aloha_policy as aloha_policy
 import openpi.policies.droid_policy as droid_policy
 import openpi.policies.libero_policy as libero_policy
 import openpi.policies.so101_policy as so101_policy
+import openpi.policies.g1_policy as g1_policy
 import openpi.shared.download as _download
 import openpi.shared.normalize as _normalize
 import openpi.training.droid_rlds_dataset as droid_rlds_dataset
@@ -377,13 +378,61 @@ class LeRobotSO101DataConfig(DataConfigFactory):
         )
 
         data_transforms = _transforms.Group(
-            inputs=[so101_policy.SO101Inputs(action_dim=model_config.action_dim, model_type=model_config.model_type)],
+            inputs=[so101_policy.SO101Inputs(model_type=model_config.model_type)],
             outputs=[so101_policy.SO101Outputs()],
         )
 
         # convert absolute actions to delta actions, except for the gripper action
         # the delta action transform
         delta_action_mask = _transforms.make_bool_mask(5, -1)
+        data_transforms = data_transforms.push(
+            inputs=[_transforms.DeltaActions(delta_action_mask)],
+            outputs=[_transforms.AbsoluteActions(delta_action_mask)],
+        )
+
+        model_transforms = ModelTransformFactory()(model_config)
+
+        return dataclasses.replace(
+            self.create_base_config(assets_dirs, model_config),
+            repack_transforms=repack_transform,
+            data_transforms=data_transforms,
+            model_transforms=model_transforms,
+            action_sequence_keys=self.action_sequence_keys,
+        )
+
+
+@dataclasses.dataclass(frozen=True)
+class LeRobotG1DataConfig(DataConfigFactory):
+    action_sequence_keys: Sequence[str] = ("action",)
+
+    @override
+    def create(self, assets_dirs: pathlib.Path, model_config: _model.BaseModelConfig) -> DataConfig:
+        # policy-dataset_keys(used for data:dict in so101_policy) -> inference-keys (lerobot-dataset keys) need for policy server
+        repack_transform = _transforms.Group(
+            inputs=[
+                _transforms.RepackTransform(
+                    {
+                        "images": {
+                            "cam_back": "observation.images.agentview_back",
+                            "cam_left_hand": "observation.images.agentview_left_hand",
+                            "cam_right_hand": "observation.images.agentview_right_hand",
+                        },
+                        "state": "observation.state",
+                        "actions": "action",
+                        "prompt": "prompt",
+                    }
+                )
+            ]
+        )
+
+        data_transforms = _transforms.Group(
+            inputs=[g1_policy.G1Inputs(model_type=model_config.model_type)],
+            outputs=[g1_policy.G1Outputs()],
+        )
+
+        # convert absolute actions to delta actions, except for the gripper action
+        # the delta action transform
+        delta_action_mask = _transforms.make_bool_mask(3, 6, 2, 6, 6, 6, 2)
         data_transforms = data_transforms.push(
             inputs=[_transforms.DeltaActions(delta_action_mask)],
             outputs=[_transforms.AbsoluteActions(delta_action_mask)],
@@ -863,7 +912,34 @@ _CONFIGS = [
             repo_id="EverNorif/leisaac-pick-orange",
             base_config=DataConfig(prompt_from_task=True),
         ),
+        batch_size=8, # used in 24GB RAM
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
+        num_train_steps=30_000,
+        freeze_filter=pi0_config.Pi0Config(pi05=True, action_dim=6, action_horizon=10, paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora").get_freeze_filter(),
+        ema_decay=None,
+    ),
+    #
+    # Fine-tuning G1 configs.
+    #
+    TrainConfig(
+        name="pi05_g1_coffee_setup_mug",
+        model=pi0_config.Pi0Config(pi05=True, action_horizon=10),
+        data=LeRobotG1DataConfig(
+            repo_id="EverNorif/lwlab_g1_coffee_setup_mug",
+            base_config=DataConfig(prompt_from_task=True),
+        ),
         batch_size=128,
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
+        num_train_steps=30_000,
+    ),
+    TrainConfig(
+        name="pi05_lora_g1_coffee_setup_mug",
+        model=pi0_config.Pi0Config(pi05=True, action_horizon=10, paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"),
+        data=LeRobotG1DataConfig(
+            repo_id="EverNorif/lwlab_g1_coffee_setup_mug",
+            base_config=DataConfig(prompt_from_task=True),
+        ),
+        batch_size=8, # used in 24GB RAM
         weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
         num_train_steps=30_000,
         freeze_filter=pi0_config.Pi0Config(pi05=True, action_horizon=10, paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora").get_freeze_filter(),

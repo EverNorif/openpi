@@ -28,8 +28,6 @@ def _parse_image(image) -> np.ndarray:
 
 @dataclasses.dataclass(frozen=True)
 class SO101Inputs(transforms.DataTransformFn):
-    action_dim: int
-
     # Determines which model will be used.
     # Do not change this for your own dataset.
     model_type: _model.ModelType = _model.ModelType.PI0
@@ -38,7 +36,7 @@ class SO101Inputs(transforms.DataTransformFn):
         # We only mask padding for pi0 model, not pi0-FAST. Do not change this for your own dataset.
         mask_padding = self.model_type == _model.ModelType.PI0
 
-        state = transforms.pad_to_dim(data["state"], self.action_dim)
+        state = np.asarray(data["state"])
 
         front_image = _parse_image(data["images/front"])
         wrist_image = _parse_image(data["images/wrist"])
@@ -65,7 +63,7 @@ class SO101Inputs(transforms.DataTransformFn):
         if "actions" in data:
             # We are padding to the model action dim.
             # For pi0-FAST, this is a no-op (since action_dim = 7).
-            actions = transforms.pad_to_dim(data["actions"], self.action_dim)
+            actions = np.asarray(data["actions"])
             inputs["actions"] = actions
 
         # Pass the prompt (aka language instruction) to the model.
