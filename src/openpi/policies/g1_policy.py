@@ -23,15 +23,6 @@ def make_g1_example() -> dict:
         "prompt": "do something",
     }
 
-def _parse_image(image) -> np.ndarray:
-    image = np.asarray(image)
-    if np.issubdtype(image.dtype, np.floating):
-        image = (255 * image).astype(np.uint8)
-    if image.shape[0] == 3:
-        image = einops.rearrange(image, "c h w -> h w c")
-    return image
-
-
 @dataclasses.dataclass(frozen=True)
 class G1Inputs(transforms.DataTransformFn):
     """Inputs for the G1 policy.
@@ -46,9 +37,9 @@ class G1Inputs(transforms.DataTransformFn):
     def __call__(self, data: dict) -> dict:
         data = _decode_g1_data(data)
         images = {
-            "base_0_rgb": _parse_image(data["images"]["cam_back"]),
-            "left_wrist_0_rgb": _parse_image(data["images"]["cam_left_hand"]),
-            "right_wrist_0_rgb": _parse_image(data["images"]["cam_right_hand"]),
+            "base_0_rgb": data["images"]["cam_back"],
+            "left_wrist_0_rgb": data["images"]["cam_left_hand"],
+            "right_wrist_0_rgb": data["images"]["cam_right_hand"],
         }
         image_masks = {
             "base_0_rgb": np.True_,

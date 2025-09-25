@@ -902,6 +902,7 @@ _CONFIGS = [
             repo_id="EverNorif/leisaac-pick-orange",
             base_config=DataConfig(prompt_from_task=True),
         ),
+        batch_size=8, # used in 24GB RAM
         weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
         num_train_steps=30_000,
     ),
@@ -912,6 +913,7 @@ _CONFIGS = [
             repo_id="EverNorif/leisaac-pick-orange",
             base_config=DataConfig(prompt_from_task=True),
         ),
+        batch_size=8, # used in 24GB RAM
         weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
         num_train_steps=30_000,
         freeze_filter=pi0_config.Pi0Config(paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora").get_freeze_filter(),
@@ -997,7 +999,7 @@ _CONFIGS = [
         name="pi0_g1_coffee_setup_mug",
         model=pi0_config.Pi0Config(),
         data=LeRobotG1DataConfig(
-            repo_id="EverNorif/lwlab_g1_coffee_setup_mug",
+            repo_id="EverNorif/lwlab_g1_coffee_setup_mug_170",
             base_config=DataConfig(prompt_from_task=True),
         ),
         weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
@@ -1007,7 +1009,7 @@ _CONFIGS = [
         name="pi0_lora_g1_coffee_setup_mug",
         model=pi0_config.Pi0Config(paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"),
         data=LeRobotG1DataConfig(
-            repo_id="EverNorif/lwlab_g1_coffee_setup_mug",
+            repo_id="EverNorif/lwlab_g1_coffee_setup_mug_170",
             base_config=DataConfig(prompt_from_task=True),
         ),
         weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
@@ -1019,7 +1021,7 @@ _CONFIGS = [
         name="pi05_g1_coffee_setup_mug",
         model=pi0_config.Pi0Config(pi05=True, action_horizon=10),
         data=LeRobotG1DataConfig(
-            repo_id="EverNorif/lwlab_g1_coffee_setup_mug",
+            repo_id="EverNorif/lwlab_g1_coffee_setup_mug_170",
             base_config=DataConfig(prompt_from_task=True),
         ),
         batch_size=128,
@@ -1030,7 +1032,7 @@ _CONFIGS = [
         name="pi05_lora_g1_coffee_setup_mug",
         model=pi0_config.Pi0Config(pi05=True, action_horizon=10, paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"),
         data=LeRobotG1DataConfig(
-            repo_id="EverNorif/lwlab_g1_coffee_setup_mug",
+            repo_id="EverNorif/lwlab_g1_coffee_setup_mug_170",
             base_config=DataConfig(prompt_from_task=True),
         ),
         batch_size=8, # used in 24GB RAM
