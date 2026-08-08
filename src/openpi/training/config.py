@@ -475,7 +475,7 @@ class LeRobotX7SDataConfig(DataConfigFactory):
                 _transforms.RepackTransform(
                     {
                         "images": {
-                            "front": "observation.images.first_person_rgb",
+                            "front": "observation.images.first_person_camera_rgb",
                             "left": "observation.images.left_hand_camera_rgb",
                             "right": "observation.images.right_hand_camera_rgb",
                         },
@@ -984,10 +984,10 @@ _CONFIGS = [
     # X7S configs.
     #
     TrainConfig(
-        name="pi05_x7s_task", # NOTE: Change here
+        name="pi05_wrc_pick_tools_to_trash_bin_no_clean", # NOTE: Change here
         model=pi0_config.Pi0Config(pi05=True, action_horizon=16, action_dim=32),
         data=LeRobotX7SDataConfig(
-            repo_id="user_id/dataset_name", # NOTE: Change here
+            repo_id="EverNorif/wrc_pick_tools_to_trash_bin_no_clean_v0_21", # NOTE: Change here
             base_config=DataConfig(prompt_from_task=True),
         ),
         weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
