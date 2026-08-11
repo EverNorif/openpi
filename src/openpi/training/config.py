@@ -490,13 +490,13 @@ class LeRobotX7SDataConfig(DataConfigFactory):
             outputs=[x7s_policy.X7SOutputs(action_dim=21)],
         )
 
-        # convert absolute actions to delta actions, except for the gripper action
-        # the delta action transform
-        delta_action_mask = _transforms.make_bool_mask(-3, -2, 7, 7, -1, -1)
-        data_transforms = data_transforms.push(
-            inputs=[_transforms.DeltaActions(delta_action_mask)],
-            outputs=[_transforms.AbsoluteActions(delta_action_mask)],
-        )
+        # # convert absolute actions to delta actions, except for the gripper action
+        # # the delta action transform
+        # delta_action_mask = _transforms.make_bool_mask(-3, -2, -7, -7, -1, -1)
+        # data_transforms = data_transforms.push(
+        #     inputs=[_transforms.DeltaActions(delta_action_mask)],
+        #     outputs=[_transforms.AbsoluteActions(delta_action_mask)],
+        # )
 
         model_transforms = ModelTransformFactory()(model_config)
 

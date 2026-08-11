@@ -41,11 +41,14 @@ def make_x7s_example() -> dict:
     }
 
 def _decode_x7s_data(data: dict) -> dict:
+    # original state is [base, body, head, left_arm, right_arm, left_gripper, right_gripper]
+    # dim size: [3, 2, 2, 7, 7, 2, 2]
     state = np.asarray(data["state"])
+    
     # reorder state to align with action
     # now state is [base, body, left_arm, right_arm, left_gripper, right_gripper]
     # dim sizes: [3, 2, 7, 7, 1, 1]
-    state = state[_X7S_STATE_PERM]
+    # state = state[_X7S_STATE_PERM]
     
     def convert_image(img):
         img = np.asarray(img)
