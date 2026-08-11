@@ -34,11 +34,9 @@ def make_x7s_example() -> dict:
     """Creates a random input example for the X7S policy."""
     return {
         "state": np.ones((25,)), # in original state ordering
-        "images": {
-            "front": np.random.randint(256, size=(3, 720, 1280), dtype=np.uint8),
-            "left": np.random.randint(256, size=(3, 360, 640), dtype=np.uint8),
-            "right": np.random.randint(256, size=(3, 360, 640), dtype=np.uint8),
-        },
+        "images/front": np.random.randint(256, size=(3, 720, 1280), dtype=np.uint8),
+        "images/left": np.random.randint(256, size=(3, 360, 640), dtype=np.uint8),
+        "images/right": np.random.randint(256, size=(3, 360, 640), dtype=np.uint8),
         "prompt": "do something",
     }
 
@@ -57,10 +55,11 @@ def _decode_x7s_data(data: dict) -> dict:
         # Convert from [channel, height, width] to [height, width, channel].
         return einops.rearrange(img, "c h w -> h w c")
 
-    images = data["images"]
-    images_dict = {name: convert_image(img) for name, img in images.items()}
-
-    data["images"] = images_dict
+    data["images"] = {
+        "front": convert_image(data["images/front"]),
+        "left": convert_image(data["images/left"]),
+        "right": convert_image(data["images/right"]),
+    }
     data["state"] = state
     return data
 

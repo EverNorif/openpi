@@ -474,11 +474,9 @@ class LeRobotX7SDataConfig(DataConfigFactory):
             inputs=[
                 _transforms.RepackTransform(
                     {
-                        "images": {
-                            "front": "observation.images.first_person_camera_rgb",
-                            "left": "observation.images.left_hand_camera_rgb",
-                            "right": "observation.images.right_hand_camera_rgb",
-                        },
+                        "images/front": "observation.images.first_person_camera_rgb",
+                        "images/left": "observation.images.left_hand_camera_rgb",
+                        "images/right": "observation.images.right_hand_camera_rgb",
                         "state": "observation.state",
                         "actions": "action",
                         "prompt": "prompt",
