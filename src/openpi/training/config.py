@@ -982,10 +982,10 @@ _CONFIGS = [
     # X7S configs.
     #
     TrainConfig(
-        name="pi05_wrc_pick_tools_to_trash_bin", # NOTE: Change here
+        name="pi05_wrc_pick_tools_to_trash_bin",
         model=pi0_config.Pi0Config(pi05=True, action_horizon=16, action_dim=32),
         data=LeRobotX7SDataConfig(
-            repo_id="EverNorif/wrc_pick_tools_to_trash_bin_v0_21", # NOTE: Change here
+            repo_id="EverNorif/wrc_pick_tools_to_trash_bin_v0_21",
             base_config=DataConfig(prompt_from_task=True),
         ),
         weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
@@ -993,6 +993,45 @@ _CONFIGS = [
         save_interval=2000,
         keep_period=2000,
         num_train_steps=30_000,
+    ),
+    TrainConfig(
+        name="pi05_wrc_battery_in_tray",
+        model=pi0_config.Pi0Config(pi05=True, action_horizon=16, action_dim=32),
+        data=LeRobotX7SDataConfig(
+            repo_id="EverNorif/wrc_battery_in_tray_v0_21",
+            base_config=DataConfig(prompt_from_task=True),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
+        batch_size=32,
+        save_interval=1000,
+        keep_period=1000,
+        num_train_steps=10_000,
+    ),
+    TrainConfig(
+        name="pi05_wrc_factory_cable",
+        model=pi0_config.Pi0Config(pi05=True, action_horizon=16, action_dim=32),
+        data=LeRobotX7SDataConfig(
+            repo_id="EverNorif/wrc_factory_cable_v0_21",
+            base_config=DataConfig(prompt_from_task=True),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
+        batch_size=32,
+        save_interval=1000,
+        keep_period=1000,
+        num_train_steps=10_000,
+    ),
+    TrainConfig(
+        name="pi05_wrc_pick_glove",
+        model=pi0_config.Pi0Config(pi05=True, action_horizon=16, action_dim=32),
+        data=LeRobotX7SDataConfig(
+            repo_id="EverNorif/wrc_pick_glove_v0_21",
+            base_config=DataConfig(prompt_from_task=True),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
+        batch_size=32,
+        save_interval=1000,
+        keep_period=1000,
+        num_train_steps=10_000,
     ),
     #
     # Debugging configs.
