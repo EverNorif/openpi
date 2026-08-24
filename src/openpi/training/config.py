@@ -20,6 +20,7 @@ import openpi.models.tokenizer as _tokenizer
 import openpi.policies.aloha_policy as aloha_policy
 import openpi.policies.droid_policy as droid_policy
 import openpi.policies.libero_policy as libero_policy
+import openpi.policies.yam_policy as yam_policy
 import openpi.shared.download as _download
 import openpi.shared.normalize as _normalize
 import openpi.training.droid_rlds_dataset as droid_rlds_dataset
@@ -459,6 +460,45 @@ class LeRobotDROIDDataConfig(DataConfigFactory):
             repack_transforms=repack_transform,
             data_transforms=data_transforms,
             model_transforms=model_transforms,
+        )
+
+
+@dataclasses.dataclass(frozen=True)
+class LeRobotYAMDataConfig(DataConfigFactory):
+    action_sequence_keys: Sequence[str] = ("action",)
+
+    @override
+    def create(self, assets_dirs: pathlib.Path, model_config: _model.BaseModelConfig) -> DataConfig:
+        # policy-dataset_keys(used for data:dict in yam_policy) -> inference-keys (lerobot-dataset keys) need for policy server
+        repack_transform = _transforms.Group(
+            inputs=[
+                _transforms.RepackTransform(
+                    {
+                        "images/top": "observation.images.top",
+                        "images/left": "observation.images.left",
+                        "images/right": "observation.images.right",
+                        "state": "observation.state",
+                        "actions": "action",
+                        "prompt": "prompt",
+                    }
+                )
+            ]
+        )
+
+        data_transforms = _transforms.Group(
+            inputs=[yam_policy.YAMInputs(model_type=model_config.model_type)],
+            outputs=[yam_policy.YAMOutputs(action_dim=14)],
+        )
+
+        model_transforms = ModelTransformFactory()(model_config)
+
+        return dataclasses.replace(
+            self.create_base_config(assets_dirs, model_config),
+            repack_transforms=repack_transform,
+            data_transforms=data_transforms,
+            model_transforms=model_transforms,
+            prompt_from_task=True,
+            action_sequence_keys=self.action_sequence_keys,
         )
 
 
@@ -929,6 +969,22 @@ _CONFIGS = [
         ),
         weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
         num_train_steps=20_000,
+    ),
+    #
+    # YAM configs.
+    #
+    TrainConfig(
+        name="pi05_yam_sortitem",
+        model=pi0_config.Pi0Config(pi05=True, action_horizon=16, action_dim=32),
+        data=LeRobotYAMDataConfig(
+            repo_id="EverNorif/rre_sortitem_yam_v0",
+            base_config=DataConfig(prompt_from_task=True),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
+        batch_size=32,
+        save_interval=2000,
+        keep_period=2000,
+        num_train_steps=30_000,
     ),
     #
     # Debugging configs.
