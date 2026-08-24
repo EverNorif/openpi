@@ -141,8 +141,21 @@ class Normalize(DataTransformFn):
     def _normalize_quantile(self, x, stats: NormStats):
         assert stats.q01 is not None
         assert stats.q99 is not None
-        q01, q99 = stats.q01[..., : x.shape[-1]], stats.q99[..., : x.shape[-1]]
-        return (x - q01) / (q99 - q01 + 1e-6) * 2.0 - 1.0
+        q01, q99 = stats.q01, stats.q99
+
+        def normalize_with_bounds(values, min_vals, max_vals):
+            normalized = np.zeros_like(values)
+            mask = ~np.isclose(max_vals, min_vals, atol=1e-3)
+            normalized[..., mask] = (values[..., mask] - min_vals[..., mask]) / (
+                max_vals[..., mask] - min_vals[..., mask]
+            )
+            normalized[..., mask] = 2.0 * normalized[..., mask] - 1.0
+            return normalized
+
+        if (dim := q01.shape[-1]) < x.shape[-1]:
+            normalized = normalize_with_bounds(x[..., :dim], q01, q99)
+            return np.concatenate([normalized, x[..., dim:]], axis=-1)
+        return normalize_with_bounds(x, q01[..., : x.shape[-1]], q99[..., : x.shape[-1]])
 
 
 @dataclasses.dataclass(frozen=True)
@@ -176,9 +189,20 @@ class Unnormalize(DataTransformFn):
         assert stats.q01 is not None
         assert stats.q99 is not None
         q01, q99 = stats.q01, stats.q99
+        
+        def unnormalize_with_bounds(values, min_vals, max_vals):
+            unnormalized = np.array(values, copy=True)
+            mask = ~np.isclose(max_vals, min_vals, atol=1e-3)
+            unnormalized[..., mask] = (values[..., mask] + 1.0) / 2.0 * (
+                max_vals[..., mask] - min_vals[..., mask]
+            ) + min_vals[..., mask]
+            unnormalized[..., ~mask] = min_vals[..., ~mask]
+            return unnormalized
+
         if (dim := q01.shape[-1]) < x.shape[-1]:
-            return np.concatenate([(x[..., :dim] + 1.0) / 2.0 * (q99 - q01 + 1e-6) + q01, x[..., dim:]], axis=-1)
-        return (x + 1.0) / 2.0 * (q99 - q01 + 1e-6) + q01
+            unnormalized = unnormalize_with_bounds(x[..., :dim], q01, q99)
+            return np.concatenate([unnormalized, x[..., dim:]], axis=-1)
+        return unnormalize_with_bounds(x, q01[..., : x.shape[-1]], q99[..., : x.shape[-1]])
 
 
 @dataclasses.dataclass(frozen=True)
