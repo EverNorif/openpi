@@ -15,9 +15,10 @@ dependencies = [
     "fsspec[gcs]>=2024.6.0",
     "gym-aloha>=0.1.1",
     "imageio>=2.36.1",
-    "jax[cuda12]==0.5.3",
     "jaxtyping==0.2.36",
     "lerobot",
+    # Pinned LeRobot expects list/tensor columns; datasets>=4 returns Column.
+    "datasets==3.6.0",
     "ml_collections==1.0.0",
     "numpy>=1.22.4,<2.0.0",
     "numpydantic>=1.6.6",
@@ -27,6 +28,8 @@ dependencies = [
     "pillow>=11.0.0",
     "sentencepiece>=0.2.0",
     "torch==2.7.1",
+    # LeRobot pulls latest torchcodec; 0.16+ is built against newer torch ABI than 2.7.1.
+    "torchcodec==0.4.0",
     "tqdm-loggable>=0.2",
     "typing-extensions>=4.12.2",
     "tyro>=0.9.5",

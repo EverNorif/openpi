@@ -4,6 +4,9 @@ checkpoints/
 data/
 wandb/
 
+# Host-specific CUDA/cuDNN/NCCL layout for building jaxlib.
+third_party/nvidia/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
