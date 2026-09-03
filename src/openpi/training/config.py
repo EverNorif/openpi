@@ -474,9 +474,9 @@ class LeRobotYAMDataConfig(DataConfigFactory):
             inputs=[
                 _transforms.RepackTransform(
                     {
-                        "images/top": "observation.images.top",
-                        "images/left": "observation.images.left",
-                        "images/right": "observation.images.right",
+                        "images/top": "observation.images.head",
+                        "images/left": "observation.images.left_wrist",
+                        "images/right": "observation.images.right_wrist",
                         "state": "observation.state",
                         "actions": "action",
                         "prompt": "prompt",
@@ -982,8 +982,8 @@ _CONFIGS = [
         ),
         weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
         batch_size=32,
-        save_interval=2000,
-        keep_period=2000,
+        save_interval=1000,
+        keep_period=1000,
         num_train_steps=30_000,
     ),
     #
